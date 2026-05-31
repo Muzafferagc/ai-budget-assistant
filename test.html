@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Budget Assistant - API Test Arayüzü</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            max-width: 650px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+        }
+        h1 {
+            color: #1a73e8;
+            margin-top: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .upload-area {
+            border: 2px dashed #1a73e8;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            background: #f8fafd;
+            margin: 20px 0;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            background: #f1f6fe;
+        }
+        input[type="file"] {
+            display: block;
+            margin: 15px auto;
+        }
+        button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #1557b0;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        h3 {
+            margin-top: 25px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+            color: #555;
+        }
+        pre {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            min-height: 80px;
+        }
+        .success-text {
+            color: #48bb78;
+            font-weight: bold;
+        }
+        .error-text {
+            color: #f56565;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>🧾 AI Fiş Analiz Test Arayüzü</h1>
+        <p>
+            PowerShell veya terminal komutlarıyla uğraşmak yerine, bu küçük yerel arayüzü kullanarak 
+            backend sunucunuza kolayca görsel gönderebilirsiniz. 
+            <strong>Lütfen backend uygulamanızın (port 8080) çalıştığından emin olun.</strong>
+        </p>
+
+        <form id="uploadForm">
+            <div class="upload-area">
+                <strong>Bir Fiş / Fatura Resmi Seçin</strong>
+                <input type="file" id="fileInput" accept="image/*" required>
+            </div>
+            <button type="submit" id="submitBtn">Görseli Gönder ve Gemini ile Analiz Et</button>
+        </form>
+
+        <h3>Backend API Yanıtı</h3>
+        <pre id="result">Lütfen yukarıdan bir dosya seçip gönderin...</pre>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const resultElement = document.getElementById('result');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (fileInput.files.length === 0) return;
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Gemini API Görseli Analiz Ediyor... (Bekleyin)';
+            resultElement.innerHTML = 'İstek gönderildi, yapay zeka resmi okuyor ve verileri çıkarıyor...';
+            
+            try {
+                // Backend sunucumuzun endpoint'ine POST isteği gönderiyoruz
+                const response = await fetch('http://localhost:8080/api/expenses/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultElement.innerHTML = '<span class="success-text">✔ ANALİZ BAŞARILI!</span>\n\n' + 
+                                              JSON.stringify(data, null, 4);
+                } else {
+                    const errorText = await response.text();
+                    resultElement.innerHTML = '<span class="error-text">❌ SUNUCU HATASI!</span>\n' + 
+                                              'Status Code: ' + response.status + '\n' + 
+                                              'Hata Detayı: ' + errorText;
+                }
+            } catch (error) {
+                resultElement.innerHTML = '<span class="error-text">❌ BAĞLANTI HATASI!</span>\n\n' +
+                                          'Neden kaynaklanabilir?\n' +
+                                          '1. Backend uygulamanız (localhost:8080) çalışmıyor olabilir.\n' +
+                                          '2. application.properties dosyasındaki Gemini API Key yanlış veya geçersiz olabilir.\n' +
+                                          '3. İnternet bağlantınızda bir sorun olabilir.\n\n' +
+                                          'Hata Kodu: ' + error.message;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Görseli Gönder ve Gemini ile Analiz Et';
+            }
+        });
+    </script>
+</body>
+</html>
