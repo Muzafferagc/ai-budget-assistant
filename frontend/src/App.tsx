@@ -653,6 +653,19 @@ export default function App() {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/expenses';
 
+  const getReceiptImageUrl = (url: string | null): string => {
+    if (!url) return '';
+    if (url.startsWith('/uploads/')) {
+      const apiBase = API_BASE_URL.replace('/api/expenses', '');
+      return apiBase + url;
+    }
+    if (url.startsWith('http://localhost:8080')) {
+      const apiBase = API_BASE_URL.replace('/api/expenses', '');
+      return url.replace('http://localhost:8080', apiBase);
+    }
+    return url;
+  };
+
   // 1. Sayfa ilk açıldığında harcamaları backend'den çeken ve sistem durumunu kontrol eden fonksiyon
   const fetchExpenses = async () => {
     if (!currentUser) return;
@@ -1777,13 +1790,13 @@ export default function App() {
                                       </h4>
                                       <div className="relative group/img overflow-hidden rounded-xl border border-slate-800 bg-slate-950 aspect-[3/4] flex items-center justify-center">
                                         <img 
-                                          src={expense.receiptImageUrl} 
+                                          src={getReceiptImageUrl(expense.receiptImageUrl)} 
                                           alt="Fiş Görseli" 
                                           className="w-full h-full object-cover transition-transform duration-300 group-hover/img:scale-105"
                                         />
                                         <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                           <a 
-                                            href={expense.receiptImageUrl} 
+                                            href={getReceiptImageUrl(expense.receiptImageUrl)} 
                                             target="_blank" 
                                             rel="noopener noreferrer"
                                             className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-lg transition active:scale-95 text-center"
@@ -2036,13 +2049,13 @@ export default function App() {
                                             </h4>
                                             <div className="relative overflow-hidden rounded-xl border border-slate-850 bg-slate-950 aspect-[3/4] flex items-center justify-center max-w-[120px] self-start md:self-auto">
                                               <img 
-                                                src={expense.receiptImageUrl} 
+                                                src={getReceiptImageUrl(expense.receiptImageUrl)} 
                                                 alt="Fiş Görseli" 
                                                 className="w-full h-full object-cover"
                                               />
                                               <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
                                                 <a 
-                                                  href={expense.receiptImageUrl} 
+                                                  href={getReceiptImageUrl(expense.receiptImageUrl)} 
                                                   target="_blank" 
                                                   rel="noopener noreferrer"
                                                   className="px-2 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[9px] font-semibold transition"
@@ -2123,7 +2136,7 @@ export default function App() {
                         {/* Fiş Resim Önizlemesi */}
                         <div className="flex-1 w-full overflow-hidden relative bg-slate-950">
                           <img 
-                            src={receipt.receiptImageUrl || ''} 
+                            src={getReceiptImageUrl(receipt.receiptImageUrl)} 
                             alt={receipt.storeName}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
@@ -2667,7 +2680,7 @@ export default function App() {
                 {/* Resim Container */}
                 <div className="w-full h-full flex items-center justify-center overflow-hidden p-6 relative">
                   <img 
-                    src={inspectorExpense.receiptImageUrl || ''} 
+                    src={getReceiptImageUrl(inspectorExpense.receiptImageUrl)} 
                     alt={inspectorExpense.storeName}
                     style={{
                       transform: `scale(${imageZoom}) rotate(${imageRotation}deg)`,

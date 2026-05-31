@@ -59,7 +59,8 @@ public class ExpenseController {
             java.io.File destFile = new java.io.File(uploadDir.getAbsolutePath(), fileName);
             java.nio.file.Files.copy(file.getInputStream(), destFile.toPath(),
                     java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            String receiptImageUrl = "http://localhost:8080/uploads/" + fileName;
+            String baseUrl = org.springframework.web.servlet.support.ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+            String receiptImageUrl = baseUrl + "/uploads/" + fileName;
 
             // 2. GeminiService aracılığıyla yapay zeka analizini başlatıyoruz
             ExpenseAnalysisResult analysisResult = geminiService.analyzeReceipt(bytes, contentType);
